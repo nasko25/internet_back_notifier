@@ -44,3 +44,8 @@ print("There is network connection")
 
 # TODO persistence
 # check for network connection every 10 minutes?
+# TODO add formatted colored output (with clearing the screen and all)
+# Also add parameters -i and -o for input file and output directory to download articles so that if the wifi goes down you could still read them.
+# Add threads to download the articles when the program is run and to (try to ) keep downloading when the file is updated by the user
+    # The file will be a list of urls separated by a /n.
+    # When users add or remove urls from the file, the script will download/delete the articles from the urls (threaded file watcher)
