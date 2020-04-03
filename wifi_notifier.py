@@ -49,3 +49,4 @@ print("There is network connection")
 # Add threads to download the articles when the program is run and to (try to ) keep downloading when the file is updated by the user
     # The file will be a list of urls separated by a /n.
     # When users add or remove urls from the file, the script will download/delete the articles from the urls (threaded file watcher)
+# parse the file so that urls are separated by new lines and # and // are comments.
