@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description="Notifier when wifi is back up.")
 parser.add_argument("--host", metavar="hostname", type=str, nargs='?', default="google.com", help="The hostname to ping")
 parser.add_argument("--count", metavar="N", type=str, nargs="?", default="2", help="The number of times the program should attemp to ping the host.")
 parser.add_argument("--silent", action="store_true", help="Silent the output. Only show when network connection is back up.")
+parser.add_argument("--seconds", type=int, choices=range(1, 10000), nargs="?", default=3, help="How many seconds between the ping requests when there is no network connection (in seconds in the range  1-10000).")
 args = parser.parse_args()
 
 # ping -c 2 google.com     for linux
@@ -27,7 +28,7 @@ print("Will start pinging", args.host, "until wifi is back up.")
 
 count_expired = 0
 while True:
-    time.sleep(3)
+    time.sleep(args.seconds)
     try:
         output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
         print(output)
