@@ -14,6 +14,7 @@ parser.add_argument("--host", metavar="hostname", type=str, nargs='?', default="
 parser.add_argument("--count", metavar="N", type=str, nargs="?", default="2", help="The number of times the program should attemp to ping the host.")
 parser.add_argument("--silent", action="store_true", help="Silent the output. Only show when network connection is back up.")
 parser.add_argument("--seconds", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=3, help="How many seconds between the ping requests when there is no network connection (in seconds in the range  1-10000).")
+parser.add_argument("--idle", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet.")
 args = parser.parse_args()
 
 # ping -c 2 google.com     for linux
@@ -31,17 +32,33 @@ count_expired = 0
 while True:
     try:
         output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
-        # print(output)
         if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
             raise TimeoutExpired("Cannot validate hostname", timeout=2)
-        break
     except(TimeoutExpired):
-        count_expired+=10
-    if not args.silent and count_expired % 10 == 0:
-        print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
-    time.sleep(args.seconds)
+        while True:
+            try:
+                output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
+                # print(output)
+                if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
+                    raise TimeoutExpired("Cannot validate hostname", timeout=2)
+                break
+            except(TimeoutExpired):
+                count_expired+=10
+            if not args.silent and count_expired % 10 == 0:
+                print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
+            time.sleep(args.seconds)
+    seconds = args.idle
+    if seconds < 60:
+        print("Trying again in", seconds, "second" if seconds == 1 else "seconds")
+    elif seconds < 3600:
+        print("Trying again in", seconds/60, "minute" if seconds == 60 else "minutes")
+    elif seconds < 86400:
+        print("Trying again in", seconds/3600, "hour" if seconds == 3600 else "hours")
+    else:
+        print("Trying again in", seconds/86400, "day" if seconds == 86400 else "days")
 
-print("There is network connection")
+    time.sleep(args.idle)
+    print("There is network connection")
 
 # TODO persistence
 # check for network connection every 10 minutes?

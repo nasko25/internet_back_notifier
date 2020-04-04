@@ -32,7 +32,8 @@ def main(stdscr):
                 return
             stdscr.addstr(row, 0, "Trying to connect" + ("." * i), curses.color_pair(1))
             stdscr.refresh()
-            time.sleep(0.1)
+            # time.sleep(user's_input/100)
+            time.sleep(0.01)
         row += 1
 
 
