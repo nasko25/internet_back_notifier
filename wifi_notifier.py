@@ -5,6 +5,7 @@ from subprocess import TimeoutExpired
 import argparse
 import platform
 import time
+from datetime import datetime
 
 # set up the command line arguments                                             The formatter will show default values
 parser = argparse.ArgumentParser(description="Notifier when wifi is back up.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -37,7 +38,7 @@ while True:
     except(TimeoutExpired):
         count_expired+=10
     if not args.silent and count_expired % 10 == 0:
-        print("Trying to connect...")
+        print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
     time.sleep(args.seconds)
 
 print("There is network connection")
