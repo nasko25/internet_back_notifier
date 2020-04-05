@@ -14,7 +14,7 @@ parser.add_argument("--host", metavar="hostname", type=str, nargs='?', default="
 parser.add_argument("--count", metavar="N", type=str, nargs="?", default="2", help="The number of times the program should attemp to ping the host.")
 parser.add_argument("--silent", action="store_true", help="Silent the output. Only show when network connection is back up.")
 parser.add_argument("--seconds", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=3, help="How many seconds between the ping requests when there is no network connection (in seconds in the range  1-10000).")
-parser.add_argument("--idle", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet.")
+parser.add_argument("--idle", type=int, choices=range(0, 10000), metavar="0-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet. Type in 0 if you want to quit after the internet is up.")
 parser.add_argument("--save", type=argparse.FileType('w', encoding='UTF-8'), metavar="/path/to/file", nargs="?", help="Save the log to a file.")
 parser.add_argument("--in", "-i", type=argparse.FileType('r'), metavar="/path/to/file", nargs="?", default="urls_to_download.txt", help="Path to the file containing the urls to download from (look at the urls_to_download.txt file for more information).")
 # TODO check if it is a valid directory
@@ -54,6 +54,8 @@ while True:
                 print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
             time.sleep(args.seconds)
     seconds = args.idle
+    if seconds == 0:
+        break
     if seconds < 60:
         print("Trying again in", seconds, "second" if seconds == 1 else "seconds")
     elif seconds < 3600:
