@@ -15,6 +15,11 @@ parser.add_argument("--count", metavar="N", type=str, nargs="?", default="2", he
 parser.add_argument("--silent", action="store_true", help="Silent the output. Only show when network connection is back up.")
 parser.add_argument("--seconds", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=3, help="How many seconds between the ping requests when there is no network connection (in seconds in the range  1-10000).")
 parser.add_argument("--idle", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet.")
+parser.add_argument("--save", type=argparse.FileType('w', encoding='UTF-8'), metavar="/path/to/file", nargs="?", help="Save the log to a file.")
+parser.add_argument("--in", "-i", type=argparse.FileType('r'), metavar="/path/to/file", nargs="?", default="urls_to_download.txt", help="Path to the file containing the urls to download from (look at the urls_to_download.txt file for more information).")
+# TODO check if it is a valid directory
+parser.add_argument("--out", "-o", type=str, metavar="/path/to/folder", nargs="?", default="downloads/", help="Path to the folder where the url resources will be downloaded (look at the urls_to_download.txt file for more information).")
+parser.add_argument("--visual", action="store_true", help="Show the log in a more visual way.")
 args = parser.parse_args()
 
 # ping -c 2 google.com     for linux
@@ -41,6 +46,7 @@ while True:
                 # print(output)
                 if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
                     raise TimeoutExpired("Cannot validate hostname", timeout=2)
+                print("\r\n\r\nThere is network connection")
                 break
             except(TimeoutExpired):
                 count_expired+=10
