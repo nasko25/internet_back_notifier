@@ -5,6 +5,7 @@ from subprocess import TimeoutExpired
 import argparse
 import platform
 import time
+import curses
 from datetime import datetime
 
 # set up the command line arguments                                             The formatter will show default values
@@ -31,42 +32,93 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
-print("Will start pinging", args.host, "until wifi is back up.")
+def main_not_visual():
+    print("Will start pinging", args.host, "until wifi is back up.")
 
-count_expired = 0
-while True:
-    try:
-        output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
-        if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
-            raise TimeoutExpired("Cannot validate hostname", timeout=2)
-    except(TimeoutExpired):
-        while True:
-            try:
-                output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
-                # print(output)
-                if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
-                    raise TimeoutExpired("Cannot validate hostname", timeout=2)
-                print("\r\n\r\nThere is network connection")
-                break
-            except(TimeoutExpired):
-                count_expired+=10
-            if not args.silent and count_expired % 10 == 0:
-                print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
-            time.sleep(args.seconds)
-    seconds = args.idle
-    if seconds == 0:
-        break
-    if seconds < 60:
-        print("Trying again in", seconds, "second" if seconds == 1 else "seconds")
-    elif seconds < 3600:
-        print("Trying again in", seconds/60, "minute" if seconds == 60 else "minutes")
-    elif seconds < 86400:
-        print("Trying again in", seconds/3600, "hour" if seconds == 3600 else "hours")
-    else:
-        print("Trying again in", seconds/86400, "day" if seconds == 86400 else "days")
+    count_expired = 0
+    while True:
+        try:
+            output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
+            if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
+                raise TimeoutExpired("Cannot validate hostname", timeout=2)
+        except(TimeoutExpired):
+            while True:
+                try:
+                    output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
+                    # print(output)
+                    if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
+                        raise TimeoutExpired("Cannot validate hostname", timeout=2)
+                    print("\r\n\r\nThere is network connection")
+                    break
+                except(TimeoutExpired):
+                    count_expired+=10
+                if not args.silent and count_expired % 10 == 0:
+                    print(datetime.now().strftime("%d %b [%H:%M:%S] "), "Trying to connect...")
+                time.sleep(args.seconds)
+        seconds = args.idle
+        if seconds == 0:
+            break
+        if seconds < 60:
+            print("Trying again in", seconds, "second" if seconds == 1 else "seconds")
+        elif seconds < 3600:
+            print("Trying again in", seconds/60, "minute" if seconds == 60 else "minutes")
+        elif seconds < 86400:
+            print("Trying again in", seconds/3600, "hour" if seconds == 3600 else "hours")
+        else:
+            print("Trying again in", seconds/86400, "day" if seconds == 86400 else "days")
 
-    time.sleep(args.idle)
-    print("There is network connection")
+        time.sleep(args.idle)
+        print("There is network connection")
+
+
+def main(stdscr):
+    # allow key presses to not stop execution of the program
+    stdscr.nodelay(True)
+    # disable the cursor
+    curses.curs_set(False)
+    # Clear screen
+    stdscr.clear()
+    row = 0
+    for i in range(3):
+        for i in range(100):
+            # get user input
+            if stdscr.getch() != curses.ERR:
+                return
+            stdscr.addstr(row, 0, "Trying to connect" + ("." * i), curses.color_pair(1))
+            stdscr.refresh()
+            # time.sleep(user's_input/100)
+            time.sleep(0.01)
+        row += 1
+
+
+if args.visual:
+    # initilize curses
+    stdscr = curses.initscr()
+    # add support for colors if the terminal allows of course
+    curses.start_color()
+    # initilize the first color pair (foreground, background)
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    # do not echo user's keys to the screen
+    curses.noecho()
+    # react to key presses instantly (do not require Enter to be pressed)
+    curses.cbreak()
+    # interpret function and arrow keys as well
+    stdscr.keypad(True)
+    
+    # call the main fuction with curses
+    curses.wrapper(main)
+
+
+    # exit curses
+    # reverse the curses-friendly terminal settings
+    curses.nocbreak()
+    stdscr.keypad(False)
+    curses.echo()
+
+    # restore the terminal to it's workng state
+    curses.endwin()
+else:
+    main_not_visual()
 
 # TODO persistence
 # check for network connection every 10 minutes?
