@@ -6,6 +6,7 @@ import argparse
 import platform
 import time
 import curses
+import sys
 from datetime import datetime
 
 # set up the command line arguments                                             The formatter will show default values
@@ -90,25 +91,7 @@ def main(stdscr):
             time.sleep(0.01)
         row += 1
 
-
-if args.visual:
-    # initilize curses
-    stdscr = curses.initscr()
-    # add support for colors if the terminal allows of course
-    curses.start_color()
-    # initilize the first color pair (foreground, background)
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-    # do not echo user's keys to the screen
-    curses.noecho()
-    # react to key presses instantly (do not require Enter to be pressed)
-    curses.cbreak()
-    # interpret function and arrow keys as well
-    stdscr.keypad(True)
-    
-    # call the main fuction with curses
-    curses.wrapper(main)
-
-
+def exit_curses(): 
     # exit curses
     # reverse the curses-friendly terminal settings
     curses.nocbreak()
@@ -117,6 +100,31 @@ if args.visual:
 
     # restore the terminal to it's workng state
     curses.endwin()
+
+    sys.exit(0)
+
+if args.visual:
+    try:
+        # initilize curses
+        stdscr = curses.initscr()
+        # add support for colors if the terminal allows of course
+        curses.start_color()
+        # initilize the first color pair (foreground, background)
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        # do not echo user's keys to the screen
+        curses.noecho()
+        # react to key presses instantly (do not require Enter to be pressed)
+        curses.cbreak()
+        # interpret function and arrow keys as well
+        stdscr.keypad(True)
+    
+        # call the main fuction with curses
+        curses.wrapper(main)
+    except KeyboardInterrupt:
+        print("Goodbye")
+
+    exit_curses()
+
 else:
     main_not_visual()
 
