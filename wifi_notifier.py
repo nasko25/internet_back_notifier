@@ -79,8 +79,8 @@ def main(stdscr):
     curses.curs_set(False)
     # Clear screen
     stdscr.clear()
-    row = 0
-    for i in range(3):
+
+    for row in range(3):
         for i in range(100):
             # get user input
             if stdscr.getch() != curses.ERR:
@@ -89,7 +89,6 @@ def main(stdscr):
             stdscr.refresh()
             # time.sleep(user's_input/100)
             time.sleep(0.01)
-        row += 1
 
 def exit_curses(): 
     # exit curses
@@ -126,7 +125,11 @@ if args.visual:
     exit_curses()
 
 else:
-    main_not_visual()
+    try:
+        main_not_visual()
+    except KeyboardInterrupt:
+        print("Goodbye")
+    sys.exit(0)
 
 # TODO persistence
 # check for network connection every 10 minutes?
