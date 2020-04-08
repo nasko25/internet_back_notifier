@@ -79,7 +79,7 @@ def main():
 try:
     main()
 except KeyboardInterrupt:
-    save("Goodbye")
+    save("\nGoodbye")
     args.save.write("\n\n")
 args.save.close()
 sys.exit(0)
