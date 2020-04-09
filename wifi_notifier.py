@@ -80,8 +80,10 @@ try:
     main()
 except KeyboardInterrupt:
     save("\nGoodbye")
-    args.save.write("\n\n")
-args.save.close()
+    if args.save != None:
+        args.save.write("\n\n")
+if args.save != None:
+    args.save.close()
 sys.exit(0)
 
 # TODO persistence
