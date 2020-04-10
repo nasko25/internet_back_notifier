@@ -32,10 +32,14 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
-def save(msg): 
+def save(msg, **kwargs):
     if args.save != None:
         args.save.write(msg + "\n")
-    print(msg)
+    
+    if kwargs.get("color") != None:      # end colored msg
+        print(kwargs.get("color"), msg, "\033[0m")
+    else: 
+        print(msg)
 
 def main():
     save("Will start pinging " + args.host + " until wifi is back up.")
@@ -53,7 +57,7 @@ def main():
                     # print(output)
                     if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
                         raise TimeoutExpired("Cannot validate hostname", timeout=2)
-                    save("\r\n\r\nThere is network connection")
+                    save("\r\n\r\nThere is network connection", color="\033[92m")
                     break
                 except(TimeoutExpired):
                     count_expired+=10
@@ -83,6 +87,7 @@ except KeyboardInterrupt:
     if args.save != None:
         args.save.write("\n\n")
 if args.save != None:
+    args.save.write("---------------------------------------------------------------------------")
     args.save.close()
 sys.exit(0)
 
