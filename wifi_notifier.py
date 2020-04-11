@@ -32,6 +32,7 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
+# TODO windows no colors
 def save(msg, **kwargs):
     if args.save != None:
         args.save.write(msg + "\n")
@@ -48,6 +49,7 @@ def main():
     while True:
         try:
             output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
+                                                                     # TODO windows return code is 1 for some reason
             if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
                 raise TimeoutExpired("Cannot validate hostname", timeout=2)
         except(TimeoutExpired):
