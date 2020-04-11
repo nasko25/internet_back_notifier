@@ -32,13 +32,17 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
-# TODO windows no colors
+# TODO probably refactor if you at some point need more colors
 def save(msg, **kwargs):
     if args.save != None:
         args.save.write(msg + "\n")
-    
-    if kwargs.get("color") != None:      # end colored msg
+                                       # windows cmd has weird colors
+    if kwargs.get("color") != None and platform.system().lower() != "windows":
+                                    # end colored msg
         print(kwargs.get("color"), msg, "\033[0m")
+    elif kwargs.get("color") == "\033[92m" and platform.system().lower() == "windows":
+        # different ansi code for windows?
+        pass
     else: 
         print(msg)
 
