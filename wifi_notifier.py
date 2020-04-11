@@ -9,6 +9,15 @@ import curses
 import sys
 from datetime import datetime
 
+try:
+    if platform.system().lower() == "windows":
+        import colorama
+        # initilize colorama, so that the ansi color codes will work on windows as well
+        colorama.init()
+except ImportError:
+    if platform.system().lower() == "windows":
+        print("[WARNING] You don't have colorama, so the colored output will not work on windows.")
+
 # set up the command line arguments                                             The formatter will show default values
 parser = argparse.ArgumentParser(description="Notifier when wifi is back up.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
                                                                           # choose better default targer
@@ -32,17 +41,14 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
-# TODO probably refactor if you at some point need more colors
+# TODO probably refactor if you at some point need more colors (can use the colorama color codes?)
 def save(msg, **kwargs):
     if args.save != None:
         args.save.write(msg + "\n")
-                                       # windows cmd has weird colors
-    if kwargs.get("color") != None and platform.system().lower() != "windows":
+
+    if kwargs.get("color") != None:
                                     # end colored msg
         print(kwargs.get("color"), msg, "\033[0m")
-    elif kwargs.get("color") == "\033[92m" and platform.system().lower() == "windows":
-        # different ansi code for windows?
-        pass
     else: 
         print(msg)
 

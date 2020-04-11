@@ -1,2 +1,3 @@
 # Make the list pip friendly
 watchdog
+colorama
