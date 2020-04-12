@@ -41,6 +41,7 @@ if platform.system().lower() == "windows":
 else: 
     parameter = "-c"
 
+# TODO refactor the platform.system().lower() == "windows" to a boolean variable ?
 # TODO probably refactor if you at some point need more colors (can use the colorama color codes?)
 def save(msg, **kwargs):
     if args.save != None:
@@ -59,15 +60,17 @@ def main():
     while True:
         try:
             output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
-                                                                     # TODO windows return code is 1 for some reason
-            if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
+                                                                       # windows return code is 1 for some reason
+            if ((b"Temporary failure in name resolution" in output.stderr or output.returncode==2)
+                    or (platform.system().lower() == "windows" and output.returncode==1)):
                 raise TimeoutExpired("Cannot validate hostname", timeout=2)
         except(TimeoutExpired):
             while True:
                 try:
                     output = subprocess.run(["ping", parameter, args.count, "-w", "2",args.host], timeout=2, capture_output=True)
                     # print(output)
-                    if b"Temporary failure in name resolution" in output.stderr or output.returncode==2:
+                    if ((b"Temporary failure in name resolution" in output.stderr or output.returncode==2)
+                            or (platform.system().lower() == "windows" and output.returncode==1)):
                         raise TimeoutExpired("Cannot validate hostname", timeout=2)
                     save("\r\n\r\nThere is network connection", color="\033[92m")
                     break
