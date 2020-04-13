@@ -5,8 +5,8 @@ from subprocess import TimeoutExpired
 import argparse
 import platform
 import time
-import curses
 import sys
+import threading
 from datetime import datetime
 
 try:
@@ -37,8 +37,8 @@ args = parser.parse_args()
 
 # depending on the os, ping requires different parameteres to specify count
 if platform.system().lower() == "windows":
-    parameter = "-n" 
-else: 
+    parameter = "-n"
+else:
     parameter = "-c"
 
 # TODO refactor the platform.system().lower() == "windows" to a boolean variable ?
@@ -50,7 +50,7 @@ def save(msg, **kwargs):
     if kwargs.get("color") != None:
                                     # end colored msg
         print(kwargs.get("color"), msg, "\033[0m")
-    else: 
+    else:
         print(msg)
 
 def main():
@@ -94,7 +94,13 @@ def main():
         time.sleep(args.idle)
         save("There is network connection")
 
+def article_downloader():
+    # TODO
+    pass
 
+# set up a thread for the watchdog process
+thread_watchdog = threading.Thread(target = article_downloader)
+thread_watchdog.start()
 try:
     main()
 except KeyboardInterrupt:
@@ -104,6 +110,8 @@ except KeyboardInterrupt:
 if args.save != None:
     args.save.write("---------------------------------------------------------------------------")
     args.save.close()
+    thread_watchdog.do_run = False
+    thread_watchdog.join()
 sys.exit(0)
 
 # TODO persistence
