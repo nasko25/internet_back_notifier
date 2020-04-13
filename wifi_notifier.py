@@ -2,6 +2,8 @@
 
 import subprocess
 from subprocess import TimeoutExpired
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 import argparse
 import platform
 import time
@@ -94,13 +96,31 @@ def main():
         time.sleep(args.idle)
         save("There is network connection")
 
+class FileModifiedHandler(FileSystemEventHandler):
+
+    def __init__(self, file_name):
+        self.file_name = file_name
+
+    def on_modified(self, event):
+        # check if the file
+        if not event.is_directory and event.src_path.endswith(self.file_name):
+            # TODO
+            print("file", self.file_name, "modified")
+            pass
+
 def article_downloader():
     # TODO
     thread_current = threading.currentThread()
+    observer = Observer()
+    path = "."
+                                                # file to watch
+    watch_and_download = FileModifiedHandler("urls_to_download.txt")
+    observer.schedule(watch_and_download, path, recursive=False)
+    observer.start()
     while getattr(thread_current, "do_run", True):
-        print("hello from thread")
         time.sleep(1)
-    print("bye from thread")
+    observer.stop()
+    observer.join()
 
 # set up a thread for the watchdog process
 thread_watchdog = threading.Thread(target = article_downloader)
