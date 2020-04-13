@@ -96,7 +96,11 @@ def main():
 
 def article_downloader():
     # TODO
-    pass
+    thread_current = threading.currentThread()
+    while getattr(thread_current, "do_run", True):
+        print("hello from thread")
+        time.sleep(1)
+    print("bye from thread")
 
 # set up a thread for the watchdog process
 thread_watchdog = threading.Thread(target = article_downloader)
@@ -110,12 +114,11 @@ except KeyboardInterrupt:
 if args.save != None:
     args.save.write("---------------------------------------------------------------------------")
     args.save.close()
-    thread_watchdog.do_run = False
-    thread_watchdog.join()
+
+thread_watchdog.do_run = False
+thread_watchdog.join()
 sys.exit(0)
 
-# TODO persistence
-# check for network connection every 10 minutes?
 # TODO add formatted colored output (with clearing the screen and all)
 # Also add parameters -i and -o for input file and output directory to download articles so that if the wifi goes down you could still read them.
 # Add threads to download the articles when the program is run and to (try to ) keep downloading when the file is updated by the user
