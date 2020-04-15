@@ -104,12 +104,13 @@ class FileModifiedHandler(FileSystemEventHandler):
     def on_modified(self, event):
         # check if the file
         if not event.is_directory and event.src_path.endswith(self.file_name):
-            # TODO
-            print("file", self.file_name, "modified")
+            print("[LOG] file", self.file_name, "modified") # TODO [LOG] in yellow?
+            with open(self.file_name, "r") as urls:
+                for line in urls:
+                    print(line)
             pass
 
 def article_downloader():
-    # TODO
     thread_current = threading.currentThread()
     observer = Observer()
     path = "."
