@@ -107,7 +107,11 @@ class FileModifiedHandler(FileSystemEventHandler):
             print("[LOG] file", self.file_name, "modified") # TODO [LOG] in yellow?
             with open(self.file_name, "r") as urls:
                 for line in urls:
-                    print(line)
+                    # check if the line is a comment
+                    if line.strip().startswith("#"):
+                        print("COMMENT:", line)
+                    else:
+                        print(line)
             pass
 
 def article_downloader():
