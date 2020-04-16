@@ -9,6 +9,7 @@ import argparse
 import platform
 import time
 import sys
+import os
 import threading
 from datetime import datetime
 
@@ -119,10 +120,12 @@ class FileModifiedHandler(FileSystemEventHandler):
                         url_to_download = line
                         try:
                             response = urllib.request.urlopen(url_to_download)
-                            webContent = response.read()
-                            print(webContent)
                         except(ValueError):
                              print("URL", url_to_download.strip(), "is not valid.")
+                             continue
+                        webContent = response.read()
+                        print(webContent)
+                        print(os.path.isdir(args.out))
             pass
 
 def article_downloader():
