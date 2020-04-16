@@ -1,6 +1,8 @@
 # Type in the urls that you wish to download here.
-# // and # are single line comments (should be in the very beginning of the line.)
+# // and # are single line comments (should be in the beginning of the line.)
 # The urls should be separated by a new line
 # You can modify the file and the scrip will (eventually as it is not implemented yet) download and (try to) remove the articles from the urls when you save the file. (handle exceptions)
 # You can (or will be able to :) ) delete the articles and links from the folder and this file by calling ./remove_files.py
-
+    
+google.com
+  # https://google.com

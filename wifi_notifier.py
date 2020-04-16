@@ -4,6 +4,7 @@ import subprocess
 from subprocess import TimeoutExpired
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import urllib.request, urllib.error, urllib.parse
 import argparse
 import platform
 import time
@@ -110,8 +111,18 @@ class FileModifiedHandler(FileSystemEventHandler):
                     # check if the line is a comment
                     if line.strip().startswith("#"):
                         print("COMMENT:", line)
+                    elif line.strip() == "":
+                        # the line is empty
+                        pass
                     else:
                         print(line)
+                        url_to_download = line
+                        try:
+                            response = urllib.request.urlopen(url_to_download)
+                            webContent = response.read()
+                            print(webContent)
+                        except(ValueError):
+                             print("URL", url_to_download.strip(), "is not valid.")
             pass
 
 def article_downloader():
