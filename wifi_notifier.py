@@ -5,6 +5,8 @@ from subprocess import TimeoutExpired
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import urllib.request, urllib.error, urllib.parse
+from urllib.error import HTTPError
+from urllib.error import URLError
 import argparse
 import platform
 import time
@@ -46,6 +48,9 @@ if platform.system().lower() == "windows":
 else:
     parameter = "-c"
 
+# Flag indicating whether the user has modified the file with the urls to download since the internet went down
+modified_since_no_internet = False
+
 # TODO refactor the platform.system().lower() == "windows" to a boolean variable ?
 # TODO probably refactor if you at some point need more colors (can use the colorama color codes?)
 def save(msg, **kwargs):
@@ -78,6 +83,10 @@ def main():
                             or (platform.system().lower() == "windows" and output.returncode==1)):
                         raise TimeoutExpired("Cannot validate hostname", timeout=2)
                     save("\r\n\r\nThere is network connection", color="\033[92m")
+                    global modified_since_no_internet
+                    if modified_since_no_internet:
+                        download_file(args.input)
+                        modified_since_no_internet = False
                     break
                 except(TimeoutExpired):
                     count_expired+=10
@@ -125,14 +134,29 @@ def download_file(file_name):
                 try:
                     response = urllib.request.urlopen(url_to_download)
                 except(ValueError):
-                     print("URL", url_to_download, "is not valid.")
-                     continue
+                    print("URL", url_to_download, "is not valid.")
+                    continue
+                except(HTTPError):
+                    print("Cannot find web resource with", url_to_download, "url")
+                    continue
+                except(URLError):
+                    # there is not internet connection
+                    # set a flag indicating that the user modified the urls file after the internet went down
+                    global modified_since_no_internet
+                    modified_since_no_internet = True
+                    continue
+
                 webContent = response.read()
 
                 # if the given output directory exists
                 if os.path.isdir(args.out):
-                                                            # get the hostname of the url (right now it will overwrite url files with same hostname TODO) 
-                    with open(os.path.join(args.out, str(urllib.parse.urlparse(url_to_download).hostname) + ".html"), "wb") as url_to_save:
+                    # get the hostname of the url
+                    hostname = urllib.parse.urlparse(url_to_download).hostname
+                    path = urllib.parse.urlparse(url_to_download).path
+                    path = path.replace("/", "_")
+                                                            # name of saved file
+                    save_file_path = os.path.join(args.out, hostname + path) + ".html"
+                    with open(save_file_path, "wb") as url_to_save:
                         # save the url
                         url_to_save.write(webContent)
                 else:
