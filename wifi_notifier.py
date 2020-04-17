@@ -24,16 +24,17 @@ except ImportError:
 
 # set up the command line arguments                                             The formatter will show default values
 parser = argparse.ArgumentParser(description="Notifier when wifi is back up.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-                                                                          # choose better default targer
+                                                                          # choose better default target
 parser.add_argument("--host", metavar="hostname", type=str, nargs='?', default="google.com", help="The hostname to ping")
 parser.add_argument("--count", metavar="N", type=str, nargs="?", default="2", help="The number of times the program should attemp to ping the host.")
 parser.add_argument("--silent", action="store_true", help="Silent the output. Only show when network connection is back up.")
 parser.add_argument("--seconds", type=int, choices=range(1, 10000), metavar="1-10000", nargs="?", default=3, help="How many seconds between the ping requests when there is no network connection (in seconds in the range  1-10000).")
 parser.add_argument("--idle", type=int, choices=range(0, 10000), metavar="0-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet. Type in 0 if you want to quit after the internet is up.")
 parser.add_argument("--save", type=argparse.FileType('a', encoding='UTF-8'), metavar="/path/to/file", nargs="?", help="Save the log to a file.")
-parser.add_argument("--in", "-i", type=argparse.FileType('r'), metavar="/path/to/file", nargs="?", default="urls_to_download.txt", help="Path to the file containing the urls to download from (look at the urls_to_download.txt file for more information).")
+parser.add_argument("--input", "--in", "-i", type=str, metavar="/path/to/file", nargs="?", default="urls_to_download.txt", help="Path to the file containing the urls to download from (look at the urls_to_download.txt file for more information).")
 # TODO check if it is a valid directory
 parser.add_argument("--out", "-o", type=str, metavar="/path/to/folder", nargs="?", default="downloads/", help="Path to the folder where the url resources will be downloaded (look at the urls_to_download.txt file for more information).")
+parser.add_argument("--nodownload", action="store_true", help="Use this flag, if you do not want to download anything when you modify the urls_to_download.txt file.")
 args = parser.parse_args()
 
 # ping -c 2 google.com     for linux
@@ -104,43 +105,46 @@ class FileModifiedHandler(FileSystemEventHandler):
         self.file_name = file_name
 
     def on_modified(self, event):
-        # check if the file
+        # check if the file exists
         if not event.is_directory and event.src_path.endswith(self.file_name):
             print("[LOG] file", self.file_name, "modified") # TODO [LOG] in yellow?
-            with open(self.file_name, "r") as urls:
-                for line in urls:
-                    # check if the line is a comment
-                    if line.strip().startswith("#"):
-                        print("COMMENT:", line)
-                    elif line.strip() == "":
-                        # the line is empty
-                        pass
-                    else:
-                        print(line)
-                        url_to_download = line.strip()
-                        try:
-                            response = urllib.request.urlopen(url_to_download)
-                        except(ValueError):
-                             print("URL", url_to_download, "is not valid.")
-                             continue
-                        webContent = response.read()
+            download_file(self.file_name)
 
-                        # if the given output directory exists
-                        if os.path.isdir(args.out):
-                                                                    # get the hostname of the url 
-                            with open(os.path.join(args.out, str(urllib.parse.urlparse(url_to_download).hostname) + ".html"), "wb") as url_to_save:
-                                # save the url
-                                url_to_save.write(webContent)
-                        else:
-                            print("The given output directory does not exist.")
-                            break
+def download_file(file_name):
+    with open(file_name, "r") as urls:
+        for line in urls:
+            # check if the line is a comment
+            if line.strip().startswith("#"):
+                print("COMMENT:", line)
+            elif line.strip() == "":
+                # the line is empty
+                pass
+            else:
+                print(line)
+                url_to_download = line.strip()
+                try:
+                    response = urllib.request.urlopen(url_to_download)
+                except(ValueError):
+                     print("URL", url_to_download, "is not valid.")
+                     continue
+                webContent = response.read()
+
+                # if the given output directory exists
+                if os.path.isdir(args.out):
+                                                            # get the hostname of the url (right now it will overwrite url files with same hostname TODO) 
+                    with open(os.path.join(args.out, str(urllib.parse.urlparse(url_to_download).hostname) + ".html"), "wb") as url_to_save:
+                        # save the url
+                        url_to_save.write(webContent)
+                else:
+                    print("The given output directory does not exist.")
+                    break
 
 def article_downloader():
     thread_current = threading.currentThread()
     observer = Observer()
     path = "."
-                                                # file to watch
-    watch_and_download = FileModifiedHandler("urls_to_download.txt")
+                                            # file to watch
+    watch_and_download = FileModifiedHandler(args.input)
     observer.schedule(watch_and_download, path, recursive=False)
     observer.start()
     while getattr(thread_current, "do_run", True):
@@ -148,21 +152,25 @@ def article_downloader():
     observer.stop()
     observer.join()
 
-# set up a thread for the watchdog process
-thread_watchdog = threading.Thread(target = article_downloader)
-thread_watchdog.start()
+if not args.nodownload:
+    # set up a thread for the watchdog process
+    thread_watchdog = threading.Thread(target = article_downloader)
+    thread_watchdog.start()
+    if os.path.isfile(args.input):
+        download_file(args.input)
 try:
     main()
 except KeyboardInterrupt:
-    save("\nGoodbye")
+    save("\n\nGoodbye")
     if args.save != None:
         args.save.write("\n\n")
 if args.save != None:
     args.save.write("---------------------------------------------------------------------------")
     args.save.close()
 
-thread_watchdog.do_run = False
-thread_watchdog.join()
+if not args.nodownload:
+    thread_watchdog.do_run = False
+    thread_watchdog.join()
 sys.exit(0)
 
 # TODO add formatted colored output (with clearing the screen and all)
