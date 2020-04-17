@@ -127,7 +127,6 @@ class FileModifiedHandler(FileSystemEventHandler):
 def download_file(file_name):
     with open(file_name, "r") as urls:
         global list_of_urls
-        list_of_urls = []
         for line in urls:
             # check if the line is a comment
             if line.strip().startswith("#"):
@@ -163,6 +162,10 @@ def download_file(file_name):
                     path = path.replace("/", "_")
                                                             # name of saved file
                     save_file_path = os.path.join(args.out, hostname + path) + ".html"
+                    # if the path is already in the list of urls, no need to save it again
+                    if save_file_path in list_of_urls:
+                        continue
+
                     with open(save_file_path, "wb") as url_to_save:
                         # save the url
                         url_to_save.write(webContent)
