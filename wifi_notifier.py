@@ -117,16 +117,23 @@ class FileModifiedHandler(FileSystemEventHandler):
                         pass
                     else:
                         print(line)
-                        url_to_download = line
+                        url_to_download = line.strip()
                         try:
                             response = urllib.request.urlopen(url_to_download)
                         except(ValueError):
-                             print("URL", url_to_download.strip(), "is not valid.")
+                             print("URL", url_to_download, "is not valid.")
                              continue
                         webContent = response.read()
-                        print(webContent)
-                        print(os.path.isdir(args.out))
-            pass
+
+                        # if the given output directory exists
+                        if os.path.isdir(args.out):
+                                                                    # get the hostname of the url 
+                            with open(os.path.join(args.out, str(urllib.parse.urlparse(url_to_download).hostname) + ".html"), "wb") as url_to_save:
+                                # save the url
+                                url_to_save.write(webContent)
+                        else:
+                            print("The given output directory does not exist.")
+                            break
 
 def article_downloader():
     thread_current = threading.currentThread()
