@@ -50,6 +50,8 @@ else:
 
 # Flag indicating whether the user has modified the file with the urls to download since the internet went down
 modified_since_no_internet = False
+# gobal list that will contain file paths of all urls currently in the urls_to_download.txt file
+list_of_urls = []
 
 # TODO refactor the platform.system().lower() == "windows" to a boolean variable ?
 # TODO probably refactor if you at some point need more colors (can use the colorama color codes?)
@@ -86,6 +88,7 @@ def main():
                     global modified_since_no_internet
                     if modified_since_no_internet:
                         download_file(args.input)
+                        remove_files_not_in_file()
                         modified_since_no_internet = False
                     break
                 except(TimeoutExpired):
@@ -118,9 +121,13 @@ class FileModifiedHandler(FileSystemEventHandler):
         if not event.is_directory and event.src_path.endswith(self.file_name):
             print("[LOG] file", self.file_name, "modified") # TODO [LOG] in yellow?
             download_file(self.file_name)
+            remove_files_not_in_file()
 
+# TODO don't download already downloaded files 
 def download_file(file_name):
     with open(file_name, "r") as urls:
+        global list_of_urls
+        list_of_urls = []
         for line in urls:
             # check if the line is a comment
             if line.strip().startswith("#"):
@@ -159,9 +166,25 @@ def download_file(file_name):
                     with open(save_file_path, "wb") as url_to_save:
                         # save the url
                         url_to_save.write(webContent)
+                    list_of_urls.append(save_file_path)
                 else:
                     print("The given output directory does not exist.")
                     break
+
+def remove_files_not_in_file():
+    if not os.path.isdir(args.out):
+        return
+
+    for root, dirs, files in os.walk(args.out):
+        for file in files:
+            file_with_path = os.path.join(args.out, file)
+            global list_of_urls
+            print(file_with_path, list_of_urls, file_with_path.rpartition('.')[-1])
+                                                        # check if the file is an html file
+            if file_with_path not in list_of_urls and file_with_path.rpartition('.')[-1] == "html":
+                os.remove(file_with_path)
+                print("Removed", file_with_path)
+
 
 def article_downloader():
     thread_current = threading.currentThread()
@@ -171,6 +194,7 @@ def article_downloader():
     # download all resources on start of the program
     if os.path.isfile(args.input):
         download_file(args.input)
+        remove_files_not_in_file()
                                             # file to watch
     watch_and_download = FileModifiedHandler(args.input)
     observer.schedule(watch_and_download, path, recursive=False)
