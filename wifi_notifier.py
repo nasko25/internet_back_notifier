@@ -60,7 +60,7 @@ def save(msg, **kwargs):
 
     if kwargs.get("color") != None:
                                     # end colored msg
-        print(kwargs.get("color"), msg, "\033[0m")
+        print(kwargs.get("color") + msg, "\033[0m")
     else:
         print(msg)
 
@@ -118,7 +118,7 @@ class FileModifiedHandler(FileSystemEventHandler):
     def on_modified(self, event):
         # check if the file exists
         if not event.is_directory and event.src_path.endswith(self.file_name):
-            save("[LOG] file " + self.file_name + "modified", color="\033[33m") # [LOG] in yellow
+            save("[LOG] file " + self.file_name + " modified", color="\033[33m") # [LOG] in yellow
             download_file(self.file_name)
             remove_files_not_in_file()
 
@@ -171,6 +171,7 @@ def download_file(file_name):
                     print("The given output directory does not exist.")
                     break
 
+# TODO does not work because the list of urls is not updated on delete
 def remove_files_not_in_file():
     if not os.path.isdir(args.out):
         return
