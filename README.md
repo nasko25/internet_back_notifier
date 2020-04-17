@@ -18,5 +18,5 @@ chmod +x when_is_my_wifi_back
 `python3.7` or later and `pip`
 To download the requirements run
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
