@@ -34,7 +34,6 @@ parser.add_argument("--seconds", type=int, choices=range(1, 10000), metavar="1-1
 parser.add_argument("--idle", type=int, choices=range(0, 10000), metavar="0-10000", nargs="?", default=600, help="How many seconds between the requests when you are connected to the internet. Type in 0 if you want to quit after the internet is up.")
 parser.add_argument("--save", type=argparse.FileType('a', encoding='UTF-8'), metavar="/path/to/file", nargs="?", help="Save the log to a file.")
 parser.add_argument("--input", "--in", "-i", type=str, metavar="/path/to/file", nargs="?", default="urls_to_download.txt", help="Path to the file containing the urls to download from (look at the urls_to_download.txt file for more information).")
-# TODO check if it is a valid directory
 parser.add_argument("--out", "-o", type=str, metavar="/path/to/folder", nargs="?", default="downloads/", help="Path to the folder where the url resources will be downloaded (look at the urls_to_download.txt file for more information).")
 parser.add_argument("--nodownload", action="store_true", help="Use this flag, if you do not want to download anything when you modify the urls_to_download.txt file.")
 args = parser.parse_args()
@@ -123,7 +122,6 @@ class FileModifiedHandler(FileSystemEventHandler):
             download_file(self.file_name)
             remove_files_not_in_file()
 
-# TODO don't download already downloaded files 
 def download_file(file_name):
     with open(file_name, "r") as urls:
         global list_of_urls
@@ -227,9 +225,3 @@ if not args.nodownload:
     thread_watchdog.join()
 sys.exit(0)
 
-# TODO add formatted colored output (with clearing the screen and all)
-# Also add parameters -i and -o for input file and output directory to download articles so that if the wifi goes down you could still read them.
-# Add threads to download the articles when the program is run and to (try to ) keep downloading when the file is updated by the user
-    # The file will be a list of urls separated by a /n.
-    # When users add or remove urls from the file, the script will download/delete the articles from the urls (threaded file watcher)
-# parse the file so that urls are separated by new lines and # and // are comments.
