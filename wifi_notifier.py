@@ -118,7 +118,7 @@ class FileModifiedHandler(FileSystemEventHandler):
     def on_modified(self, event):
         # check if the file exists
         if not event.is_directory and event.src_path.endswith(self.file_name):
-            print("[LOG] file", self.file_name, "modified") # TODO [LOG] in yellow?
+            save("[LOG] file " + self.file_name + "modified", color="\033[33m") # [LOG] in yellow
             download_file(self.file_name)
             remove_files_not_in_file()
 
@@ -128,12 +128,11 @@ def download_file(file_name):
         for line in urls:
             # check if the line is a comment
             if line.strip().startswith("#"):
-                print("COMMENT:", line)
+                pass
             elif line.strip() == "":
                 # the line is empty
                 pass
             else:
-                print(line)
                 url_to_download = line.strip()
                 try:
                     response = urllib.request.urlopen(url_to_download)
@@ -180,17 +179,24 @@ def remove_files_not_in_file():
         for file in files:
             file_with_path = os.path.join(args.out, file)
             global list_of_urls
-            print(file_with_path, list_of_urls, file_with_path.rpartition('.')[-1])
                                                         # check if the file is an html file
             if file_with_path not in list_of_urls and file_with_path.rpartition('.')[-1] == "html":
                 os.remove(file_with_path)
-                print("Removed", file_with_path)
+                print("[LOG] Removed", file_with_path)
 
 
 def article_downloader():
     thread_current = threading.currentThread()
     observer = Observer()
     path = "."
+
+    # populate the list of urls when the program starts
+    for root, dirs, files in os.walk(args.out):
+        for file in files:
+            file_with_path = os.path.join(args.out, file)
+            global list_of_urls
+            if file_with_path not in list_of_urls and file_with_path.rpartition('.')[-1] == "html":
+                list_of_urls.append(file_with_path)
 
     # download all resources on start of the program
     if os.path.isfile(args.input):

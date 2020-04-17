@@ -3,6 +3,6 @@
 # The urls should be separated by a new line
 # You can modify the file and the script will download and (try to) remove the articles from the urls when you save the file. (handle exceptions)
 # You can (or will be able to :) ) delete the articles and links from the folder and this file by calling ./remove_files.py
-    
+
 google.com
-   https://google.com
+   #https://google.com
