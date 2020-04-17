@@ -167,6 +167,10 @@ def article_downloader():
     thread_current = threading.currentThread()
     observer = Observer()
     path = "."
+
+    # download all resources on start of the program
+    if os.path.isfile(args.input):
+        download_file(args.input)
                                             # file to watch
     watch_and_download = FileModifiedHandler(args.input)
     observer.schedule(watch_and_download, path, recursive=False)
@@ -180,8 +184,7 @@ if not args.nodownload:
     # set up a thread for the watchdog process
     thread_watchdog = threading.Thread(target = article_downloader)
     thread_watchdog.start()
-    if os.path.isfile(args.input):
-        download_file(args.input)
+
 try:
     main()
 except KeyboardInterrupt:
