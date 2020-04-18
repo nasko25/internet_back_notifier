@@ -1,8 +1,9 @@
 # Type in the urls that you wish to download here.
 # // and # are single line comments (should be in the beginning of the line.)
 # The urls should be separated by a new line
-# You can modify the file and the script will download and (try to) remove the articles from the urls when you save the file. (handle exceptions)
-# You can (or will be able to :) ) delete the articles and links from the folder and this file by calling ./remove_files.py
+# You can modify the file and the script will download and remove the articles from the urls when you save the file.
 
+# This is an example of an invalid url
 google.com
+    # This is a valid url, but it is commented out
     #https://google.com

@@ -118,7 +118,8 @@ class FileModifiedHandler(FileSystemEventHandler):
     def on_modified(self, event):
         # check if the file exists
         if not event.is_directory and event.src_path.endswith(self.file_name):
-            save("[LOG] file " + self.file_name + " modified", color="\033[33m") # [LOG] in yellow
+            if not args.silent:
+                save("[LOG] file " + self.file_name + " modified", color="\033[33m") # [LOG] in yellow
             download_file(self.file_name)
             remove_files_not_in_file()
 
@@ -139,10 +140,12 @@ def download_file(file_name):
                 try:
                     response = urllib.request.urlopen(url_to_download)
                 except(ValueError):
-                    print("URL", url_to_download, "is not valid.")
+                    if not args.silent:
+                        print("URL", url_to_download, "is not valid.")
                     continue
                 except(HTTPError):
-                    print("Cannot find web resource with", url_to_download, "url")
+                    if not args.silent:
+                        print("Cannot find web resource with", url_to_download, "url")
                     continue
                 except(URLError):
                     # there is not internet connection
@@ -165,7 +168,8 @@ def download_file(file_name):
                         url_to_save.write(webContent)
                     list_of_urls.append(save_file_path)
                 else:
-                    print("The given output directory does not exist.")
+                    if not args.silent:
+                        print("The given output directory does not exist.")
                     break
 
 def remove_files_not_in_file():
@@ -179,7 +183,8 @@ def remove_files_not_in_file():
                                                         # check if the file is an html file
             if file_with_path not in list_of_urls and file_with_path.rpartition('.')[-1] == "html":
                 os.remove(file_with_path)
-                print("[LOG] Removed", file_with_path)
+                if not args.silent:
+                    print("[LOG] Removed", file_with_path)
 
 
 def article_downloader():
