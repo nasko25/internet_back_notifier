@@ -124,7 +124,6 @@ class FileModifiedHandler(FileSystemEventHandler):
 
 def download_file(file_name):
     with open(file_name, "r") as urls:
-
         # add all links from the urls_to_download.txt file to the list_of_urls
         global list_of_urls
         list_of_urls = []
@@ -137,46 +136,13 @@ def download_file(file_name):
                 pass
             else:
                 url_to_download = line.strip()
-                hostname = urllib.parse.urlparse(url_to_download).hostname
-                path = urllib.parse.urlparse(url_to_download).path.replace("/", "_")
-
-                # if the hostname is invalid
-                if hostname == None:
-                    continue
-                save_file_path = os.path.join(args.out, hostname + path) + ".html"
-                list_of_urls.append(save_file_path)
-
-    # TODO there should be a better way to do this?
-    with open(file_name, "r") as urls:
-        for line in urls:
-            # check if the line is a comment
-            if line.strip().startswith("#"):
-                pass
-            elif line.strip() == "":
-                # the line is empty
-                pass
-            else:
-                url_to_download = line.strip()
-
-                # get the hostname of the url
-                hostname = urllib.parse.urlparse(url_to_download).hostname
-                path = urllib.parse.urlparse(url_to_download).path.replace("/", "_")
-                # if the hostname is invalid
-                if hostname == None:
-                    continue
-                                                      # name of saved file
-                save_file_path = os.path.join(args.out, hostname + path) + ".html"
                 try:
                     response = urllib.request.urlopen(url_to_download)
                 except(ValueError):
                     print("URL", url_to_download, "is not valid.")
-                    # remove it from the list, if it was added
-                    list_of_urls.remove(save_file_path)
                     continue
                 except(HTTPError):
                     print("Cannot find web resource with", url_to_download, "url")
-                    # remove it from the list, if it was added
-                    list_of_urls.remove(save_file_path)
                     continue
                 except(URLError):
                     # there is not internet connection
@@ -189,9 +155,15 @@ def download_file(file_name):
 
                 # if the given output directory exists
                 if os.path.isdir(args.out):
+                    # get the hostname of the url
+                    hostname = urllib.parse.urlparse(url_to_download).hostname
+                    path = urllib.parse.urlparse(url_to_download).path.replace("/", "_")
+                                                         # name of saved file
+                    save_file_path = os.path.join(args.out, hostname + path) + ".html"
                     with open(save_file_path, "wb") as url_to_save:
                         # save the url
                         url_to_save.write(webContent)
+                    list_of_urls.append(save_file_path)
                 else:
                     print("The given output directory does not exist.")
                     break
